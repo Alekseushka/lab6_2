@@ -572,14 +572,14 @@ namespace lab6_2
                 _ => '?'
             };
         }
-
+        
+        public enum Select {Step, Swap}
         static void Main(string[] args)
         {
             var desk = new Desk(8, 8);
             var player = new GameRules(
                 new Player(true),
                 desk);
-
             // Инициализация доски
             var board = new Dictionary<(int, int), Figure>
             {
@@ -625,30 +625,36 @@ namespace lab6_2
                 Console.WriteLine("2. Переключиться на другую фигуру");
                 
                 InputInt("Введите номер действия: ", out int choice);
+                var  selectedAction = (Select)choice;
                 
-                if (choice == 1)
+                switch (selectedAction)
                 {
-                    var from = game.CurrentPosition;
-                    if (game.ActiveFigure.Type == task.TFigure.Type)
-                    {
-                        game = player.Move(from, way[numStep], game);
-                        numStep++;
-                    }
-                    else
-                    {
-                        var to = InputCoordinates("Введите целевую позицию (x y): ", desk);
-                        game = player.Move(from, to, game);
-                    }
-                }
-                else if (choice == 2)
-                {
-                    game = InputFigure(game, desk);
-                    if (game.ActiveFigure.Type == task.TFigure.Type)
-                    {
-                        numStep = 1;
-                        way = pathFinder.FindShortestPath(game.Task.KnightPosition, game.Task.TargetPosition,
-                            game.Board);
-                    }
+                    case Select.Step:
+                        var from = game.CurrentPosition;
+                        if (game.ActiveFigure.Type == task.TFigure.Type)
+                        {
+                            game = player.Move(from, way[numStep], game);
+                            numStep++;
+                        }
+                        else
+                        {
+                            var to = InputCoordinates("Введите целевую позицию (x y): ", desk);
+                            game = player.Move(from, to, game);
+                        }
+                        break;
+
+                    case Select.Swap:
+                        game = InputFigure(game, desk);
+                        if (game.ActiveFigure.Type == task.TFigure.Type)
+                        {
+                            numStep = 1;
+                            way = pathFinder.FindShortestPath(game.Task.KnightPosition, game.Task.TargetPosition, game.Board);
+                        }
+                        break;
+    
+                    default:
+                        Console.WriteLine("Неизвестное действие!");
+                        break;
                 }
             }
 
