@@ -12,3 +12,4 @@ D:\rider_workplace\lab6_2\lab6_2\obj\Debug\net9.0\refint\lab6_2.dll
 D:\rider_workplace\lab6_2\lab6_2\obj\Debug\net9.0\lab6_2.pdb
 D:\rider_workplace\lab6_2\lab6_2\obj\Debug\net9.0\lab6_2.genruntimeconfig.cache
 D:\rider_workplace\lab6_2\lab6_2\obj\Debug\net9.0\ref\lab6_2.dll
+D:\rider_workplace\lab6_2\lab6_2\obj\Debug\net9.0\lab6_2.sourcelink.json

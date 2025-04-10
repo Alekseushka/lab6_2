@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace lab6_2
@@ -154,7 +155,6 @@ namespace lab6_2
             {
                 return false;
             }
-            
             return true;
         }
     }
@@ -225,16 +225,25 @@ namespace lab6_2
              // Просто перемещаем фигуру без проверки правил
              var newBoard = new Dictionary<(int, int), Figure>(currentState.Board);
              
-             if (newBoard.TryGetValue(from, out var figure) && figure.IsWhite == this.IsWhite)
+             if (newBoard.TryGetValue(from, out var figure))
              {
                  newBoard.Remove(from);
                  newBoard[to] = figure;
                  Console.WriteLine($"Player moved {figure.Type} from {from} to {to}");
 
+                 if (currentState.ActiveFigure.Type == currentState.Task.TFigure.Type)
+                 {
+                     return currentState.ToBuilder()
+                         .WithCurrentPosition(to)
+                         .WithBoard(newBoard)
+                         .WithActiveFigure(currentState.ActiveFigure)
+                         .WithTask(currentState.Task.WithKnightPosition(to))
+                         .Build(); 
+                 }
                  return currentState.ToBuilder()
                      .WithCurrentPosition(to)
                      .WithBoard(newBoard)
-                     .WithActiveFigure(currentState.ActiveFigure) // Можно добавить логику смены фигуры
+                     .WithActiveFigure(currentState.ActiveFigure)
                      .Build();
              }
 
@@ -376,6 +385,12 @@ namespace lab6_2
                 return this;
             }
 
+            public Builder WithTask(GameTask task)
+            {
+                _task = task;
+                return this;
+            }
+
             public GameState Build() => new GameState(
                 _activeFigure, _currentPosition, _board, _task);
         }
@@ -506,14 +521,17 @@ namespace lab6_2
             }
         }
 
-        static Figure InputFigure(GameState game, Desk desk)
+        static GameState InputFigure(GameState game, Desk desk)
         {
             while (true)
             {
                 var (x, y) = InputCoordinates("Введите координаты фигуры (x y): ", desk);
                 if (game.Board.TryGetValue((x, y), out var figure))
                 {
-                    return figure;
+                    return game.ToBuilder().
+                        WithActiveFigure(figure).
+                        WithCurrentPosition((x, y)).
+                        Build();
                 }
                 Console.WriteLine("На этой позиции нет фигуры!");
             }
@@ -593,7 +611,7 @@ namespace lab6_2
             var pathFinder = new PathFinder();
             var way = pathFinder.FindShortestPath(game.Task.KnightPosition, game.Task.TargetPosition, game.Board);
 
-            int numStep = 0;
+            int numStep = 1;
             while (!game.IsTaskComplete)
             {
                 Console.Clear();
@@ -614,7 +632,6 @@ namespace lab6_2
                     if (game.ActiveFigure.Type == task.TFigure.Type)
                     {
                         game = player.Move(from, way[numStep], game);
-                        task.WithKnightPosition(game.CurrentPosition);
                         numStep++;
                     }
                     else
@@ -625,10 +642,10 @@ namespace lab6_2
                 }
                 else if (choice == 2)
                 {
-                    var figure = InputFigure(game, desk);
+                    game = InputFigure(game, desk);
                     if (game.ActiveFigure.Type == task.TFigure.Type)
                     {
-                        numStep = 0;
+                        numStep = 1;
                         way = pathFinder.FindShortestPath(game.Task.KnightPosition, game.Task.TargetPosition,
                             game.Board);
                     }
